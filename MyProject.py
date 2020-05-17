@@ -68,9 +68,10 @@ def speakText(sa):
   mixer.music.load('%s.mp3' %counter)
   keyboard.press_and_release("k+j")
   mixer.music.play()
-   
-  time.sleep(6)
-  keyboard.press_and_release("k+j")
+  time.sleep(5)
+  keyboard.press_and_release("k+j") 
+  
+  
   counter+=1
   
 
@@ -92,7 +93,7 @@ def get_prediction(content):
   if "Happy" in xs:
     speakText("Your pet is happy. You are doing a great job!")
   elif "Sad" in xs:
-      speakText("Your pet is not emotionally well. Please do something that the pet finds funny")
+      speakText("Your pet is not emotionally well. Please take care")
   elif "Anxious" in xs:
       speakText("Your pet is stressed. Please give it some space, or let it go outside.")   
 
@@ -153,7 +154,7 @@ class ResumableMicrophoneStream:
         self._audio_interface.terminate()
 
     def _fill_buffer(self, in_data, *args, **kwargs):
-        """Continuously collect data from the audio stream, into the buffer."""
+        
         self._buff.put(in_data)
         return None, pyaudio.paContinue
 
@@ -218,100 +219,14 @@ def processInput(transcript):
     if "switchmode" in parse:
       if bo:
           bo=False
+          speakText("Pet Mode Enabled")  
       elif not bo:
-          bo=True 
-    elif "takepicture" in parse:
+          bo=True
+          speakText("Pet Mode Disabled")   
+        
+    elif "picture" in parse:
       takePic(bo)
       
-
-
-    
-def detect_faces(path):
-    """Detects faces in an image."""
-    
-    client = vision.ImageAnnotatorClient()
-
-    with io.open(path, 'rb') as image_file:
-        content = image_file.read()
-
-    image = vision.types.Image(content=content)
-
-    response = client.face_detection(image=image)
-    faces = response.face_annotations
-
- 
-    likelihood_name = ('UNKNOWN', 'VERY_UNLIKELY', 'UNLIKELY', 'POSSIBLE',
-                       'LIKELY', 'VERY_LIKELY')
-   
-     
-    for face in faces:
-      if likelihood_name[face.anger_likelihood]=='LIKELY'or likelihood_name[face.anger_likelihood]=='VERY_LIKELY':
-        speakText("The person is angry")
-      elif likelihood_name[face.joy_likelihood]=='LIKELY'or likelihood_name[face.joy_likelihood]=='VERY_LIKELY':
-        speakText("The person is happy")
-      elif likelihood_name[face.surprise_likelihood]=='LIKELY'or likelihood_name[face.surprise_likelihood]=='VERY_LIKELY':
-        speakText("The person is surprised")
-      elif likelihood_name[face.sorrow_likelihood]=='LIKELY'or likelihood_name[face.sorrow_likelihood]=='VERY_LIKELY':
-        speakText("The person is sad")  
-      elif likelihood_name[face.anger_likelihood]=='POSSIBLE'and likelihood_name[face.joy_likelihood]=='UNLIKELY' and likelihood_name[face.sorrow_likelihood]=='UNLIKELY'and likelihood_name[face.surprise_likelihood]=='UNLIKELY':
-        speakText("The person is angry")
-      elif likelihood_name[face.joy_likelihood]=='POSSIBLE'and likelihood_name[face.anger_likelihood]=='UNLIKELY' and likelihood_name[face.sorrow_likelihood]=='UNLIKELY'and likelihood_name[face.surprise_likelihood]=='UNLIKELY':
-        speakText("The person is happy")
-      elif likelihood_name[face.surprise_likelihood]=='POSSIBLE'and likelihood_name[face.joy_likelihood]=='UNLIKELY' and likelihood_name[face.sorrow_likelihood]=='UNLIKELY'and likelihood_name[face.anger_likelihood]=='UNLIKELY':
-        speakText("The person is surprised!")
-      elif likelihood_name[face.sorrow_likelihood]=='POSSIBLE'and likelihood_name[face.joy_likelihood]=='UNLIKELY' and likelihood_name[face.anger_likelihood]=='UNLIKELY'and likelihood_name[face.surprise_likelihood]=='UNLIKELY':
-        speakText("The person is sad")  
-      elif likelihood_name[face.anger_likelihood]=='UNLIKELY'and likelihood_name[face.joy_likelihood]=='VERY_UNLIKELY' and likelihood_name[face.sorrow_likelihood]=='VERY_UNLIKELY'and likelihood_name[face.surprise_likelihood]=='VERY_UNLIKELY':
-        speakText("The person is angry")
-      elif likelihood_name[face.joy_likelihood]=='UNLIKELY'and likelihood_name[face.anger_likelihood]=='VERY_UNLIKELY' and likelihood_name[face.sorrow_likelihood]=='VERY_UNLIKELY'and likelihood_name[face.surprise_likelihood]=='VERY_UNLIKELY':
-        speakText("The person is happy")
-      elif likelihood_name[face.surprise_likelihood]=='UNLIKELY'and likelihood_name[face.joy_likelihood]=='VERY_UNLIKELY' and likelihood_name[face.sorrow_likelihood]=='VERY_UNLIKELY'and likelihood_name[face.anger_likelihood]=='VERY_UNLIKELY':
-        speakText("The person is surprised")
-      elif likelihood_name[face.sorrow_likelihood]=='UNLIKELY'and likelihood_name[face.joy_likelihood]=='VERY_UNLIKELY' and likelihood_name[face.anger_likelihood]=='VERY_UNLIKELY'and likelihood_name[face.surprise_likelihood]=='VERY_UNLIKELY':
-        speakText("The person is sad")  
-      else:
-          speakText("You are a mysterious person")  
-       
-
-        
-    if response.error.message:
-        raise Exception(
-            '{}\nFor more info on error messages, check: '
-            'https://cloud.google.com/apis/design/errors'.format(
-                response.error.message))
-
-def takePic(a):
-  cam = cv2.VideoCapture(0)
-
-  cv2.namedWindow("test")
-
-  img_counter = 0
-
-
-  ret, frame = cam.read()
-  if not ret:
-    print("failed to grab frame")
-         
-  cv2.imshow("test", frame)
-  
-  im=cv2.imwrite(filename='img_name.jpg', img=frame)
-  
-  im = cv2.imshow("Captured Image", im)
-  cv2.waitKey(1650)
-  cam.release()
-  cv2.destroyAllWindows()
-  if a:
-   detect_faces("img_name.jpg")
-  else:
-   with open('img_name.jpg', 'rb') as image_file:
-    get_prediction(image_file.read())
-     
-     
-     
-
- 
-      
-
 def listen_print_loop(responses, stream):
     for response in responses:
 
@@ -361,6 +276,94 @@ def listen_print_loop(responses, stream):
             stream.last_transcript_was_final = False
 
 
+    
+def detect_faces(path):
+    """Detects faces in an image."""
+    
+    client = vision.ImageAnnotatorClient()
+
+    with io.open(path, 'rb') as image_file:
+        content = image_file.read()
+
+    image = vision.types.Image(content=content)
+
+    response = client.face_detection(image=image)
+    faces = response.face_annotations
+
+ 
+    likelihood_name = ('UNKNOWN', 'VERY_UNLIKELY', 'UNLIKELY', 'POSSIBLE',
+                       'LIKELY', 'VERY_LIKELY')
+   
+     
+    for face in faces:
+      if likelihood_name[face.anger_likelihood]=='LIKELY'or likelihood_name[face.anger_likelihood]=='VERY_LIKELY':
+        speakText("The person is angry. Try to calm the person")
+      elif likelihood_name[face.joy_likelihood]=='LIKELY'or likelihood_name[face.joy_likelihood]=='VERY_LIKELY':
+        speakText("The person is happy.")
+      elif likelihood_name[face.surprise_likelihood]=='LIKELY'or likelihood_name[face.surprise_likelihood]=='VERY_LIKELY':
+        speakText("The person is surprised!")
+      elif likelihood_name[face.sorrow_likelihood]=='LIKELY'or likelihood_name[face.sorrow_likelihood]=='VERY_LIKELY':
+        speakText("The person is sad. Talk to the person to make them feel better")  
+      elif likelihood_name[face.anger_likelihood]=='POSSIBLE'and likelihood_name[face.joy_likelihood]=='UNLIKELY' and likelihood_name[face.sorrow_likelihood]=='UNLIKELY'and likelihood_name[face.surprise_likelihood]=='UNLIKELY':
+        speakText("The person is angry. Try to calm the person")
+      elif likelihood_name[face.joy_likelihood]=='POSSIBLE'and likelihood_name[face.anger_likelihood]=='UNLIKELY' and likelihood_name[face.sorrow_likelihood]=='UNLIKELY'and likelihood_name[face.surprise_likelihood]=='UNLIKELY':
+        speakText("The person is happy")
+      elif likelihood_name[face.surprise_likelihood]=='POSSIBLE'and likelihood_name[face.joy_likelihood]=='UNLIKELY' and likelihood_name[face.sorrow_likelihood]=='UNLIKELY'and likelihood_name[face.anger_likelihood]=='UNLIKELY':
+        speakText("The person is surprised!")
+      elif likelihood_name[face.sorrow_likelihood]=='POSSIBLE'and likelihood_name[face.joy_likelihood]=='UNLIKELY' and likelihood_name[face.anger_likelihood]=='UNLIKELY'and likelihood_name[face.surprise_likelihood]=='UNLIKELY':
+        speakText("The person is sad. Talk to the person to make them feel better")    
+      elif likelihood_name[face.anger_likelihood]=='UNLIKELY'and likelihood_name[face.joy_likelihood]=='VERY_UNLIKELY' and likelihood_name[face.sorrow_likelihood]=='VERY_UNLIKELY'and likelihood_name[face.surprise_likelihood]=='VERY_UNLIKELY':
+        speakText("The person is angry. Try to calm the person")
+      elif likelihood_name[face.joy_likelihood]=='UNLIKELY'and likelihood_name[face.anger_likelihood]=='VERY_UNLIKELY' and likelihood_name[face.sorrow_likelihood]=='VERY_UNLIKELY'and likelihood_name[face.surprise_likelihood]=='VERY_UNLIKELY':
+        speakText("The person is happy")
+      elif likelihood_name[face.surprise_likelihood]=='UNLIKELY'and likelihood_name[face.joy_likelihood]=='VERY_UNLIKELY' and likelihood_name[face.sorrow_likelihood]=='VERY_UNLIKELY'and likelihood_name[face.anger_likelihood]=='VERY_UNLIKELY':
+        speakText("The person is surprised")
+      elif likelihood_name[face.sorrow_likelihood]=='UNLIKELY'and likelihood_name[face.joy_likelihood]=='VERY_UNLIKELY' and likelihood_name[face.anger_likelihood]=='VERY_UNLIKELY'and likelihood_name[face.surprise_likelihood]=='VERY_UNLIKELY':
+        speakText("The person is sad. Talk to the person to make them feel better")   
+      else:
+          speakText("The person maybe feeling anxious. Talk to the person to make them feel better")  
+       
+
+        
+    if response.error.message:
+        raise Exception(
+            '{}\nFor more info on error messages, check: '
+            'https://cloud.google.com/apis/design/errors'.format(
+                response.error.message))
+
+def takePic(a):
+  cam = cv2.VideoCapture(0)
+
+  cv2.namedWindow("test")
+
+  img_counter = 0
+
+
+  ret, frame = cam.read()
+  if not ret:
+    print("failed to grab frame")
+         
+  cv2.imshow("test", frame)
+  
+  im=cv2.imwrite(filename='img_name.jpg', img=frame)
+  
+  im = cv2.imshow("Captured Image", im)
+  cv2.waitKey(1650)
+  cam.release()
+  cv2.destroyAllWindows()
+  if a:
+   detect_faces("img_name.jpg")
+  else:
+   with open('img_name.jpg', 'rb') as image_file:
+    get_prediction(image_file.read())
+     
+     
+     
+
+     
+
+
+
 def main():
     client = speech.SpeechClient()
     config = speech.types.RecognitionConfig(
@@ -368,7 +371,7 @@ def main():
         sample_rate_hertz=SAMPLE_RATE,
         language_code='en-US',
         speech_contexts=[speech.types.SpeechContext(
-        phrases=["zoomin","zoomout","takepicture","petEdition","switchmode"])],
+        phrases=["zoomin","zoomout","takepicture","petEdition","switchmode","picture"])],
         max_alternatives=1)
     streaming_config = speech.types.StreamingRecognitionConfig(
         config=config,
