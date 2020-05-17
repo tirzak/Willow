@@ -75,7 +75,10 @@ def speakText(sa):
   counter+=1
   
 
-  
+  def get_current_time():
+    """Return Current Time in MS."""
+
+    return int(round(time.time() * 1000))
 
    
 def get_prediction(content):
@@ -103,10 +106,7 @@ def get_prediction(content):
       
  
 
-def get_current_time():
-    """Return Current Time in MS."""
 
-    return int(round(time.time() * 1000))
 
 
 class ResumableMicrophoneStream:
@@ -213,20 +213,6 @@ class ResumableMicrophoneStream:
             yield b''.join(data)
 
 
-def processInput(transcript):
-    parse = transcript.replace(" ","").lower()
-    global bo
-    if "switchmode" in parse:
-      if bo:
-          bo=False
-          speakText("Pet Mode Enabled")  
-      elif not bo:
-          bo=True
-          speakText("Pet Mode Disabled")   
-        
-    elif "picture" in parse:
-      takePic(bo)
-      
 def listen_print_loop(responses, stream):
     for response in responses:
 
@@ -331,6 +317,21 @@ def detect_faces(path):
             'https://cloud.google.com/apis/design/errors'.format(
                 response.error.message))
 
+
+def processInput(transcript):
+    parse = transcript.replace(" ","").lower()
+    global bo
+    if "switchmode" in parse:
+      if bo:
+          bo=False
+          speakText("Pet Mode Enabled")  
+      elif not bo:
+          bo=True
+          speakText("Pet Mode Disabled")   
+        
+    elif "picture" in parse:
+      takePic(bo)
+      
 def takePic(a):
   cam = cv2.VideoCapture(0)
 
@@ -379,9 +380,8 @@ def main():
 
     mic_manager = ResumableMicrophoneStream(SAMPLE_RATE, CHUNK_SIZE)
     print(mic_manager.chunk_size)
-    sys.stdout.write('\nListening, say "Quit" or "Exit" to stop.\n\n')
-    sys.stdout.write('End (ms)       Transcript Results/Status\n')
-    sys.stdout.write('=====================================================\n')
+   
+   
 
     with mic_manager as stream:
 
