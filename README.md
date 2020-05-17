@@ -1,0 +1,1 @@
+To run this project, you must have a Google Cloud Project. Set your own credentials in the environment after cloning the repo
