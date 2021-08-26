@@ -1,1 +1,2 @@
-To run this project, you must have a Google Cloud Project. Set your own credentials in the environment after cloning the repo
+# Willow
+A python based app that can classify images of pets and let the users know how their companions are doing
